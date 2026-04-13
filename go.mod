@@ -5,6 +5,7 @@ go 1.25.1
 require github.com/jackc/pgx/v5 v5.9.1
 
 require (
+	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 )
