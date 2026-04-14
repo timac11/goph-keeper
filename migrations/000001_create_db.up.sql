@@ -27,11 +27,18 @@ CREATE TRIGGER update_user_updated_at
 CREATE TABLE "secret" (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES "user" (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    
     name VARCHAR(255) NOT NULL UNIQUE,
     "type" VARCHAR(4) NOT NULL CHECK (status IN ('AUTH', 'FILE', 'CARD')),
+    data BYTEA NOT NULL,
+    metadata VARCHAR(1000),
+    public_key BYTEA NOT NULL,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (user_id, name)
+    
 );
 
 CREATE TRIGGER update_secret_updated_at
