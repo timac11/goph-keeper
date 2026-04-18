@@ -16,7 +16,7 @@ func (service *Service) Register(ctx context.Context, value *model.UserLoginDto)
 		return nil, err
 	}
 
-	userModel, err := service.Repository.CreateUser(ctx, &model.UserLoginDto{Login: value.Login, Password: password})
+	userModel, err := service.repository.CreateUser(ctx, &model.UserLoginDto{Login: value.Login, Password: password})
 
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (service *Service) Register(ctx context.Context, value *model.UserLoginDto)
 }
 
 func (service *Service) Login(ctx context.Context, value *model.UserLoginDto) (*model.User, error) {
-	userModel, err := service.Repository.GetUserByLogin(ctx, value.Login)
+	userModel, err := service.repository.GetUserByLogin(ctx, value.Login)
 
 	if err != nil {
 		return nil, err
