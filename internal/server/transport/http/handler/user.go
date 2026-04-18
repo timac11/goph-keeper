@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/timac11/goph-keeper/internal/common/logger"
+	"github.com/timac11/goph-keeper/internal/common/model"
 	"github.com/timac11/goph-keeper/internal/server/auth"
 	"github.com/timac11/goph-keeper/internal/server/errors"
-	"github.com/timac11/goph-keeper/internal/common/model"
 )
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

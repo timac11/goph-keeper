@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
+	"github.com/timac11/goph-keeper/internal/common/model"
 	"github.com/timac11/goph-keeper/internal/common/util"
 	"github.com/timac11/goph-keeper/internal/server/errors"
-	"github.com/timac11/goph-keeper/internal/common/model"
 )
 
 func (service *Service) Register(ctx context.Context, value *model.UserLoginDto) (*model.User, error) {
