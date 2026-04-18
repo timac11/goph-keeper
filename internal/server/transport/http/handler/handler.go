@@ -10,9 +10,9 @@ type Handler struct {
 	jwtControl *auth.JWTControl
 }
 
-func NewHandler(repository service.Repository, jwtControl *auth.JWTControl) *Handler {
+func NewHandler(service *service.Service, jwtControl *auth.JWTControl) *Handler {
 	return &Handler{
-		service:    service.NewService(repository),
+		service:    service,
 		jwtControl: jwtControl,
 	}
 }

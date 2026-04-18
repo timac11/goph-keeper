@@ -7,6 +7,17 @@ import (
 	"github.com/timac11/goph-keeper/internal/server/transport/http/middleware"
 )
 
+// @title Gophkeeper server API
+// @version 1.0
+// @description This is a Gophkeeper swagger API.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @BasePath /
 func Init(h handler.Handler, jwtControl *auth.JWTControl) *mux.Router {
 	r := mux.NewRouter()
 
