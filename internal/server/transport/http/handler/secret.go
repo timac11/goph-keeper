@@ -11,6 +11,23 @@ import (
 	"github.com/timac11/goph-keeper/internal/server/errors"
 )
 
+// CreateSecret godoc
+// @Summary Upload secret with metadata
+// @Description Secret multipart/form-data with fields:
+// @Description - name: string
+// @Description - metadata: string
+// @Description - data: file (binary)
+// @Description - type: one of [FILE, CARD, CREDS]
+// @Description - publicKey: file (binary)
+// @Tags Secret
+// @Accept multipart/form-data
+// @Produce json
+// @Param name formData string true "Name"
+// @Param data formData file true "Data file (binary)"
+// @Param type formData string true "Type (file|card|creds)"
+// @Param publicKey formData file true "Public key (binary)"
+// @Success 200 {object} model.SecretInfoDto
+// @Router /secret [post]
 func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	secret, err := h.extractSecretModelFromForm(r)
 	if err != nil {
@@ -31,6 +48,15 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetSecret godoc
+// @Summary      Return Secret info
+// @Description  Get secret by id
+// @Tags Secret
+// @Accept       json
+// @Produce      json
+// @Param        id   path    string  true  "Secret id"
+// @Success      200  {object}  model.Secret
+// @Router       /secret/{id} [get]
 func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -55,6 +81,12 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	w.Write(returnBody)
 }
 
+// DeleteSecret godoc
+// @Summary      Remove Secret
+// @Description  Remove secret by id
+// @Tags Secret
+// @Param        id   path    string  true  "Secret id"
+// @Router       /secret/{id} [delete]
 func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -71,7 +103,15 @@ func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) GetSecretList(w http.ResponseWriter, r *http.Request) {
+// GetSecret godoc
+// @Summary      Return Secrets list
+// @Description  Get secrets list
+// @Tags Secret
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  model.SecretInfoDto
+// @Router       /secret [get]
+func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	secrets, err := h.service.GetSecretsList(ctx)

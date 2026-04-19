@@ -1,4 +1,43 @@
 basePath: /
+definitions:
+  model.Secret:
+    properties:
+      createdAt:
+        type: string
+      data:
+        items:
+          format: int32
+          type: integer
+        type: array
+      id:
+        type: string
+      metadata:
+        type: string
+      name:
+        type: string
+      publicKey:
+        items:
+          format: int32
+          type: integer
+        type: array
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  model.SecretInfoDto:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
 info:
   contact:
     name: API Support
@@ -9,5 +48,96 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Gophkeeper server API
   version: "1.0"
-paths: {}
+paths:
+  /secret:
+    get:
+      consumes:
+      - application/json
+      description: Get secrets list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.SecretInfoDto'
+            type: array
+      summary: Return Secrets list
+      tags:
+      - Secret
+    post:
+      consumes:
+      - multipart/form-data
+      description: |-
+        Secret multipart/form-data with fields:
+        - name: string
+        - metadata: string
+        - data: file (binary)
+        - type: one of [FILE, CARD, CREDS]
+        - publicKey: file (binary)
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Data file (binary)
+        in: formData
+        name: data
+        required: true
+        type: file
+      - description: Type (file|card|creds)
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: Public key (binary)
+        in: formData
+        name: publicKey
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SecretInfoDto'
+      summary: Upload secret with metadata
+      tags:
+      - Secret
+  /secret/{id}:
+    delete:
+      description: Remove secret by id
+      parameters:
+      - description: Secret id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: Remove Secret
+      tags:
+      - Secret
+    get:
+      consumes:
+      - application/json
+      description: Get secret by id
+      parameters:
+      - description: Secret id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Secret'
+      summary: Return Secret info
+      tags:
+      - Secret
 swagger: "2.0"
