@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var UserIsUnauthorized = _errors.New("user is unauthorized")
+
 type InvalidPasswordError struct {
 	Password string
 }

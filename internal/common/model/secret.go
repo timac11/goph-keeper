@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+const (
+	File = "FILE"
+	Auth = "AUTH"
+	Card = "CARD"
+)
+
 type Secret struct {
 	ID        string
 	Name      string

@@ -17,14 +17,14 @@ func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCr
 	var secretModel model.SecretInfoDto
 
 	query, _, err := sq.Insert("user").
-		Columns("id", "name", "type", "data", "metadata", "public_key").
-		Values(userId, secret.Name, secret.Type, secret.Data, secret.Metadata, secret.PublicKey).
-		Suffix("RETURNING id, name").
+		Columns("id", "name", "type", "data", "metadata", "public_key", "user_id").
+		Values(userId, secret.Name, secret.Type, secret.Data, secret.Metadata, secret.PublicKey, userId).
+		Suffix("RETURNING id, name, type, created_at, updated_at").
 		ToSql()
 
 	err = client.pool.
 		QueryRow(ctx, query).
-		Scan(&secretModel.ID, &secretModel.Name)
+		Scan(&secretModel.ID, &secretModel.Name, &secretModel.Type, &secretModel.CreatedAt, &secretModel.UpdatedAt)
 
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
@@ -36,12 +36,12 @@ func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCr
 	return &secretModel, nil
 }
 
-func (client *PgClient) GetSecret(ctx context.Context, id string) (*model.Secret, error) {
+func (client *PgClient) GetSecret(ctx context.Context, id, userId string) (*model.Secret, error) {
 	var secret model.Secret
 
 	query, _, err := sq.Select("id", "name", "type", "data", "metadata", "public_key", "created_at", "updated_at").
 		From("secret").
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id, "user_id": userId}).
 		ToSql()
 
 	if err != nil {
@@ -62,12 +62,8 @@ func (client *PgClient) GetSecret(ctx context.Context, id string) (*model.Secret
 	return &secret, nil
 }
 
-func (client *PgClient) UpdateSecret(ctx context.Context, secret *model.Secret) (*model.Secret, error) {
-	return nil, internalErrors.New("Not implemented")
-}
-
-func (client *PgClient) DeleteSecret(ctx context.Context, id string) error {
-	query, _, err := sq.Delete("secret").Where(sq.Eq{"id": id}).ToSql()
+func (client *PgClient) DeleteSecret(ctx context.Context, id, userId string) error {
+	query, _, err := sq.Delete("secret").Where(sq.Eq{"id": id, "user_id": userId}).ToSql()
 
 	if err != nil {
 		return err
@@ -79,10 +75,11 @@ func (client *PgClient) DeleteSecret(ctx context.Context, id string) error {
 
 }
 
-func (client *PgClient) GetSecretList(ctx context.Context, id string) (*[]model.SecretInfoDto, error) {
+func (client *PgClient) GetSecretsList(ctx context.Context, userId string) (*[]model.SecretInfoDto, error) {
 	query, _, err := sq.
 		Select("id", "name", "type", "updated_at", "created_at").
 		From("secret").
+		Where(sq.Eq{"user_id": userId}).
 		ToSql()
 
 	if err != nil {
