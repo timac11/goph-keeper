@@ -1,75 +1,77 @@
 package config
 
 import (
-	"time"
+	"encoding/json"
+	"errors"
+	"os"
 
 	"github.com/caarlos0/env"
 	"github.com/spf13/pflag"
 )
 
 type Config struct {
-	Address              string `env:"RUN_ADDRESS"`
-	DatabaseURI          string `env:"DATABASE_URI"`
-	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
-	JWTSecret            string `env:"JWT_SECRET"`
-	JWTExpMinutes        uint   `env:"JWT_EXP_MINUTES"`
-	ClientTimeout        time.Duration
-	RetryTimeout         time.Duration
-	ProcessingTimeout    time.Duration
-	WorkersCount         uint
-	OrdersBuffer         uint32
+	ConfigPath      string `env:"CONFIG_PATH"`
+	PrivateKeyPath  string
+	PublicKeyPath   string
+	ServerAddress   string
+	SessionFilePath string
 }
 
-func InitConfig() *Config {
+type jsonConfig struct {
+	PrivateKeyPath  string `json:"privateKeyPath"`
+	PublicKeyPath   string `json:"publicKeyPath"`
+	ServerAddress   string `json:"serverAddress"`
+	SessionFilePath string `json:"sessionFilePath"`
+}
+
+func InitConfig() (*Config, error) {
 	envValues := initEnv()
 	flagValues := initFlags()
 
-	if envValues.Address == "" {
-		envValues.Address = flagValues.Address
+	if envValues.ConfigPath == "" {
+		envValues.ConfigPath = flagValues.ConfigPath
 	}
 
-	if envValues.DatabaseURI == "" {
-		envValues.DatabaseURI = flagValues.DatabaseURI
-	}
-
-	if envValues.AccrualSystemAddress == "" {
-		envValues.AccrualSystemAddress = flagValues.AccrualSystemAddress
-	}
-
-	if envValues.JWTSecret == "" {
-		envValues.JWTSecret = flagValues.JWTSecret
-	}
-
-	if envValues.JWTExpMinutes == 0 {
-		envValues.JWTExpMinutes = flagValues.JWTExpMinutes
-	}
-
-	envValues.ClientTimeout = time.Second * 2
-	envValues.RetryTimeout = time.Second * 1
-	envValues.ProcessingTimeout = time.Second * 3
-
-	envValues.WorkersCount = 3
-	envValues.OrdersBuffer = 10
-
-	return envValues
+	return assignJSONConfig(envValues)
 }
 
 func initEnv() *Config {
-	agentConfig := Config{}
+	conf := Config{}
 
-	env.Parse(&agentConfig)
+	env.Parse(&conf)
 
-	return &agentConfig
+	return &conf
+}
+
+func assignJSONConfig(config *Config) (*Config, error) {
+	if config.ConfigPath != "" {
+		_, err := os.Stat(config.ConfigPath)
+
+		if err == nil || !errors.Is(err, os.ErrNotExist) {
+			file, err := os.OpenFile(config.ConfigPath, os.O_RDONLY, 0x666)
+			if err == nil {
+				defer file.Close()
+				var jsonConfig jsonConfig
+
+				if err := json.NewDecoder(file).Decode(&jsonConfig); err == nil {
+					config.PrivateKeyPath = jsonConfig.PrivateKeyPath
+					config.PublicKeyPath = jsonConfig.PublicKeyPath
+					config.SessionFilePath = jsonConfig.SessionFilePath
+					config.ServerAddress = jsonConfig.ServerAddress
+				}
+			}
+
+			return nil, err
+		}
+	}
+
+	return config, nil
 }
 
 func initFlags() *Config {
 	flagValues := Config{}
 
-	pflag.StringVarP(&flagValues.Address, "addr", "a", "localhost:3000", "Address host:port")
-	pflag.StringVarP(&flagValues.DatabaseURI, "dbaddr", "d", "postgresql://localhost/postgres", "PG URI")
-	pflag.StringVarP(&flagValues.AccrualSystemAddress, "accrualaddr", "r", "http://localhost:8080", "Accrual system host:port")
-	pflag.StringVarP(&flagValues.JWTSecret, "jwtsec", "j", "DEFAULT_SECRET", "JWT Secret") // it is not right, remove default arg
-	pflag.UintVarP(&flagValues.JWTExpMinutes, "jwtexp", "s", 180, "JWT lifetime in minutes")
+	pflag.StringVarP(&flagValues.ConfigPath, "conf", "c", "./config.json", "Path to config file in json format")
 	pflag.Parse()
 
 	return &flagValues

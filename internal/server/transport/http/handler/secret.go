@@ -28,6 +28,7 @@ import (
 // @Param publicKey formData file true "Public key (binary)"
 // @Success 200 {object} model.SecretInfoDto
 // @Router /secret [post]
+// @Security     ApiKeyAuth
 func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	secret, err := h.extractSecretModelFromForm(r)
 	if err != nil {
@@ -57,6 +58,7 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path    string  true  "Secret id"
 // @Success      200  {object}  model.Secret
 // @Router       /secret/{id} [get]
+// @Security     ApiKeyAuth
 func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -87,6 +89,7 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 // @Tags Secret
 // @Param        id   path    string  true  "Secret id"
 // @Router       /secret/{id} [delete]
+// @Security     ApiKeyAuth
 func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -111,6 +114,7 @@ func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Success      200  {array}  model.SecretInfoDto
 // @Router       /secret [get]
+// @Security     ApiKeyAuth
 func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
