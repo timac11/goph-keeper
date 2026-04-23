@@ -2,14 +2,11 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/timac11/goph-keeper/internal/client/model"
 )
 
-type LoginCmdArgs struct {
-	Login    string
-	Password string
-}
-
-func BuildLoginCmd(executor func(LoginCmdArgs) error) *cobra.Command {
+func BuildLoginCmd(executor func(model.LoginArgs) error) *cobra.Command {
 	return &cobra.Command{
 		Use:   "login",
 		Short: "Login user",
