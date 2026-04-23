@@ -18,6 +18,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.26.0 // indirect
 	github.com/go-openapi/swag/typeutils v0.26.0 // indirect
 	github.com/go-openapi/swag/yamlutils v0.26.0 // indirect
+	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
