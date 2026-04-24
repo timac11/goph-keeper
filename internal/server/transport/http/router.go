@@ -31,10 +31,10 @@ func Init(h handler.Handler, jwtControl *auth.JWTControl) *mux.Router {
 
 	privateRouter := r.PathPrefix("/api").Subrouter()
 	privateRouter.Use(m.AuthCheckMiddleware)
-	privateRouter.HandleFunc("/secret", h.GetSecretsList).Methods("GET")
-	privateRouter.HandleFunc("/secret/{id}", h.GetSecret).Methods("GET")
-	privateRouter.HandleFunc("/secret/{id}", h.DeleteSecret).Methods("DELETE")
-	privateRouter.HandleFunc("/secret", h.CreateSecret).Methods("POST")
+	privateRouter.HandleFunc("/secrets", h.GetSecretsList).Methods("GET")
+	privateRouter.HandleFunc("/secrets/{id}", h.GetSecret).Methods("GET")
+	privateRouter.HandleFunc("/secrets/{id}", h.DeleteSecret).Methods("DELETE")
+	privateRouter.HandleFunc("/secrets", h.CreateSecret).Methods("POST")
 
 	publicRouter := r.PathPrefix("/api").Subrouter()
 	publicRouter.Use(m.NotAuthCheckMiddleware)

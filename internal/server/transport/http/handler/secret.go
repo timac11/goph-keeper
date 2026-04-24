@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -50,13 +52,13 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetSecret godoc
-// @Summary      Return Secret info
-// @Description  Get secret by id
+// @Summary		Get secret
+// @Description	Returns secret fields and secret data file as multipart/form-data.
 // @Tags Secret
-// @Accept       json
-// @Produce      json
-// @Param        id   path    string  true  "Secret id"
-// @Success      200  {object}  model.Secret
+// @Produce		multipart/form-data
+// @Param			id	path	string	true	"Secret id"
+// @Success		200	{string}	string	"multipart/form-data response with fields: id, name, metadata, publicKey, type and file field data"
+// @Failure		500	{string}	string	"Internal server error"
 // @Router       /secret/{id} [get]
 // @Security     ApiKeyAuth
 func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
@@ -72,15 +74,35 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnBody, err := json.Marshal(secret)
+	mw := multipart.NewWriter(w)
+	defer mw.Close()
+
+	w.Header().Set("Content-Type", mw.FormDataContentType())
+
+	_ = mw.WriteField("id", secret.ID)
+	_ = mw.WriteField("name", secret.Name)
+	_ = mw.WriteField("metadata", secret.Metadata)
+	_ = mw.WriteField("publicKey", secret.PublicKey)
+	_ = mw.WriteField("type", secret.Type)
+
+	part, err := mw.CreateFormFile("data", secret.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(returnBody)
+	file, err := os.Open(secret.DataPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(part, file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // DeleteSecret godoc
@@ -132,14 +154,10 @@ func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) extractSecretModelFromForm(r *http.Request) (*model.SecretCreateDto, error) {
-	err := r.ParseMultipartForm(32 << 20) // TODO: add max file size
-	if err != nil {
-		return nil, errors.SecretInvalidForm
-	}
-
 	name := r.FormValue("name")
 	uploadType := r.FormValue("type")
 	metadata := r.FormValue("metadata")
+	publicKey := r.FormValue("publicKey")
 
 	if name == "" {
 		return nil, errors.SecretNameIsRequired
@@ -157,26 +175,23 @@ func (h *Handler) extractSecretModelFromForm(r *http.Request) (*model.SecretCrea
 	}
 	defer dataFile.Close()
 
-	dataBytes, err := io.ReadAll(dataFile)
+	dataPath := "./uploads/" + name
+
+	dst, err := os.Create(dataPath)
 	if err != nil {
-		return nil, errors.SecretFileFailedToRead
+		return nil, err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, dataFile); err != nil {
+		return nil, err
 	}
 
-	pubFile, _, err := r.FormFile("publicKey")
-	if err != nil {
-		return nil, errors.PublicKeyIsRequired
-	}
-	defer pubFile.Close()
-
-	publicKeyBytes, err := io.ReadAll(pubFile)
-	if err != nil {
-		return nil, errors.PublicKeyFailedToRead
-	}
-
-	return &model.SecretCreateDto{Name: name,
+	return &model.SecretCreateDto{
+		Name:      name,
 		Type:      uploadType,
 		Metadata:  metadata,
-		Data:      dataBytes,
-		PublicKey: publicKeyBytes,
+		DataPath:  dataPath,
+		PublicKey: publicKey,
 	}, nil
 }

@@ -13,9 +13,9 @@ const (
 type Secret struct {
 	ID        string
 	Name      string
-	Data      []byte
+	DataPath  string
 	Metadata  string
-	PublicKey []byte
+	PublicKey string
 	Type      string
 
 	CreatedAt time.Time
@@ -24,9 +24,9 @@ type Secret struct {
 
 type SecretCreateDto struct {
 	Name      string
-	Data      []byte
+	DataPath  string
 	Metadata  string
-	PublicKey []byte
+	PublicKey string
 	Type      string
 }
 

@@ -18,7 +18,7 @@ func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCr
 
 	query, _, err := sq.Insert("user").
 		Columns("id", "name", "type", "data", "metadata", "public_key", "user_id").
-		Values(userId, secret.Name, secret.Type, secret.Data, secret.Metadata, secret.PublicKey, userId).
+		Values(userId, secret.Name, secret.Type, secret.DataPath, secret.Metadata, secret.PublicKey, userId).
 		Suffix("RETURNING id, name, type, created_at, updated_at").
 		ToSql()
 
@@ -50,7 +50,7 @@ func (client *PgClient) GetSecret(ctx context.Context, id, userId string) (*mode
 
 	err = client.pool.
 		QueryRow(ctx, query).
-		Scan(&secret.ID, &secret.Name, &secret.Type, &secret.Data, &secret.Metadata, &secret.PublicKey, &secret.CreatedAt, &secret.UpdatedAt)
+		Scan(&secret.ID, &secret.Name, &secret.Type, &secret.DataPath, &secret.Metadata, &secret.PublicKey, &secret.CreatedAt, &secret.UpdatedAt)
 
 	if err != nil {
 		if internalErrors.Is(err, pgx.ErrNoRows) {

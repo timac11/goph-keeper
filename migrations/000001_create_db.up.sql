@@ -30,9 +30,9 @@ CREATE TABLE "secret" (
     
     name VARCHAR(255) NOT NULL UNIQUE,
     "type" VARCHAR(4) NOT NULL CHECK (status IN ('AUTH', 'FILE', 'CARD')),
-    data BYTEA NOT NULL,
+    data_path VARCHAR NOT NULL,
     metadata VARCHAR(1000),
-    public_key BYTEA NOT NULL,
+    public_key VARCHAR NOT NULL,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
