@@ -24,6 +24,11 @@ const docTemplate = `{
     "paths": {
         "/secret": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get secrets list",
                 "consumes": [
                     "application/json"
@@ -48,6 +53,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Secret multipart/form-data with fields:\n- name: string\n- metadata: string\n- data: file (binary)\n- type: one of [FILE, CARD, CREDS]\n- publicKey: file (binary)",
                 "consumes": [
                     "multipart/form-data"
@@ -101,17 +111,19 @@ const docTemplate = `{
         },
         "/secret/{id}": {
             "get": {
-                "description": "Get secret by id",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
                 ],
+                "description": "Returns secret fields and secret data file as multipart/form-data.",
                 "produces": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "tags": [
                     "Secret"
                 ],
-                "summary": "Return Secret info",
+                "summary": "Get secret",
                 "parameters": [
                     {
                         "type": "string",
@@ -123,14 +135,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "multipart/form-data response with fields: id, name, metadata, publicKey, type and file field data",
                         "schema": {
-                            "$ref": "#/definitions/model.Secret"
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Remove secret by id",
                 "tags": [
                     "Secret"
@@ -150,43 +173,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.Secret": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "publicKey": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "model.SecretInfoDto": {
             "type": "object",
             "properties": {
@@ -206,6 +192,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

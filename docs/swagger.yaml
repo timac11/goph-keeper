@@ -1,30 +1,5 @@
 basePath: /
 definitions:
-  model.Secret:
-    properties:
-      createdAt:
-        type: string
-      data:
-        items:
-          format: int32
-          type: integer
-        type: array
-      id:
-        type: string
-      metadata:
-        type: string
-      name:
-        type: string
-      publicKey:
-        items:
-          format: int32
-          type: integer
-        type: array
-      type:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   model.SecretInfoDto:
     properties:
       createdAt:
@@ -63,6 +38,8 @@ paths:
             items:
               $ref: '#/definitions/model.SecretInfoDto'
             type: array
+      security:
+      - ApiKeyAuth: []
       summary: Return Secrets list
       tags:
       - Secret
@@ -104,6 +81,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.SecretInfoDto'
+      security:
+      - ApiKeyAuth: []
       summary: Upload secret with metadata
       tags:
       - Secret
@@ -117,13 +96,13 @@ paths:
         required: true
         type: string
       responses: {}
+      security:
+      - ApiKeyAuth: []
       summary: Remove Secret
       tags:
       - Secret
     get:
-      consumes:
-      - application/json
-      description: Get secret by id
+      description: Returns secret fields and secret data file as multipart/form-data.
       parameters:
       - description: Secret id
         in: path
@@ -131,13 +110,25 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
+      - multipart/form-data
       responses:
         "200":
-          description: OK
+          description: 'multipart/form-data response with fields: id, name, metadata,
+            publicKey, type and file field data'
           schema:
-            $ref: '#/definitions/model.Secret'
-      summary: Return Secret info
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get secret
       tags:
       - Secret
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

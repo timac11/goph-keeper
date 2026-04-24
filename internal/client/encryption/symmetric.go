@@ -25,7 +25,7 @@ func generateNonce(counter uint64) []byte {
 	return nonce
 }
 
-func EncryptFile(in, out *os.File) (*[]byte, error) {
+func SymmetricEncryptFile(in, out *os.File) (*[]byte, error) {
 	key, err := generateKey()
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func EncryptFile(in, out *os.File) (*[]byte, error) {
 	return &key, nil
 }
 
-func DecryptFile(in, out *os.File, key []byte) error {
+func SymmetricDecryptFile(in, out *os.File, key []byte) error {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return err
