@@ -1,17 +1,34 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+
 	"github.com/spf13/cobra"
 
 	"github.com/timac11/goph-keeper/internal/client/model"
 )
 
-func BuildLoginCmd(executor func(model.LoginArgs) error) *cobra.Command {
-	return &cobra.Command{
+func BuildLoginCmd(executor func(context.Context, model.LoginArgs) error) *cobra.Command {
+	var commandArgs model.LoginArgs
+
+	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Login user",
-		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: use executor
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if commandArgs.Login == "" {
+				return errors.New("login is required")
+			}
+			if commandArgs.Password == "" {
+				return errors.New("password is required")
+			}
+
+			return executor(cmd.Context(), commandArgs)
 		},
 	}
+
+	cmd.Flags().StringVar(&commandArgs.Login, "login", "", "User login")
+	cmd.Flags().StringVar(&commandArgs.Password, "password", "", "User password")
+
+	return cmd
 }

@@ -1,17 +1,34 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+
 	"github.com/spf13/cobra"
 
 	"github.com/timac11/goph-keeper/internal/client/model"
 )
 
-func BuildRegisterCmd(executor func(model.RegisterArgs) error) *cobra.Command {
-	return &cobra.Command{
+func BuildRegisterCmd(executor func(context.Context, model.RegisterArgs) error) *cobra.Command {
+	var commandArgs model.RegisterArgs
+
+	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register user",
-		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: use executor
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if commandArgs.Login == "" {
+				return errors.New("login is required")
+			}
+			if commandArgs.Password == "" {
+				return errors.New("password is required")
+			}
+
+			return executor(cmd.Context(), commandArgs)
 		},
 	}
+
+	cmd.Flags().StringVar(&commandArgs.Login, "login", "", "User login")
+	cmd.Flags().StringVar(&commandArgs.Password, "password", "", "User password")
+
+	return cmd
 }

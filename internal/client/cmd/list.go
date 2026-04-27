@@ -1,17 +1,21 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 
 	"github.com/timac11/goph-keeper/internal/client/model"
 )
 
-func BuildListCmd(executor func(model.ListArgs) error) *cobra.Command {
+func BuildListCmd(executor func(context.Context, model.ListArgs) error) *cobra.Command {
+	var commandArgs model.ListArgs
+
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List of uploaded data",
-		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: use executor
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return executor(cmd.Context(), commandArgs)
 		},
 	}
 }

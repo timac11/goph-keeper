@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -28,7 +29,7 @@ func NewHTTPClient(address string) *HTTPClient {
 	return &HTTPClient{client: *client}
 }
 
-func (client *HTTPClient) Login(login, password string) (*model.UserLoginResultDto, error) {
+func (client *HTTPClient) Login(ctx context.Context, login, password string) (*model.UserLoginResultDto, error) {
 	payload := model.UserLoginDto{Login: login, Password: password}
 	var result model.UserLoginResultDto
 
@@ -44,7 +45,7 @@ func (client *HTTPClient) Login(login, password string) (*model.UserLoginResultD
 	return &result, nil
 }
 
-func (client *HTTPClient) Register(login, password string) (*model.UserLoginResultDto, error) {
+func (client *HTTPClient) Register(ctx context.Context, login, password string) (*model.UserLoginResultDto, error) {
 	payload := model.UserLoginDto{Login: login, Password: password}
 	var result model.UserLoginResultDto
 
@@ -60,7 +61,7 @@ func (client *HTTPClient) Register(login, password string) (*model.UserLoginResu
 	return &result, nil
 }
 
-func (client *HTTPClient) GetList(token string) (*[]model.SecretInfoDto, error) {
+func (client *HTTPClient) GetList(ctx context.Context, token string) (*[]model.SecretInfoDto, error) {
 	var result []model.SecretInfoDto
 
 	response, err := client.client.R().SetHeader("Authorization", token).
@@ -77,11 +78,10 @@ func (client *HTTPClient) GetList(token string) (*[]model.SecretInfoDto, error) 
 	return &result, nil
 }
 
-func (client *HTTPClient) GetSecret(token, id string) (*model.Secret, error) {
-	var result model.Secret
-
+func (client *HTTPClient) GetSecret(ctx context.Context, token, id string) (*clientModel.GetSecretDto, error) {
 	response, err := client.client.R().SetHeader("Authorization", token).
-		SetResult(result).
+		SetContext(ctx).
+		SetDoNotParseResponse(true).
 		Get(fmt.Sprintf("/api/secret/%s", id))
 	if err != nil {
 		return nil, err
@@ -91,10 +91,20 @@ func (client *HTTPClient) GetSecret(token, id string) (*model.Secret, error) {
 		return nil, errors.New("get secret error")
 	}
 
-	return &result, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return &clientModel.GetSecretDto{
+		Name:      response.Header().Get("X-Secret-Name"),
+		Type:      response.Header().Get("X-Secret-Type"),
+		Metadata:  response.Header().Get("X-Secret-Metadata"),
+		PublicKey: response.Header().Get("X-Secret-PublicKey"),
+		File:      response.RawBody(),
+	}, nil
 }
 
-func (client *HTTPClient) DeleteSecret(token, id string) error {
+func (client *HTTPClient) DeleteSecret(ctx context.Context, token, id string) error {
 	response, err := client.client.R().SetHeader("Authorization", token).
 		Delete(fmt.Sprintf("/api/secret/%s", id))
 	if err != nil {
@@ -108,18 +118,23 @@ func (client *HTTPClient) DeleteSecret(token, id string) error {
 	return nil
 }
 
-func (client *HTTPClient) UploadSecret(token string, data clientModel.UploadData) error {
-	response, err := client.client.R().SetHeader("Authorization", token).
-		SetFile("data", data.FilePath).
-		SetFile("publicKey", data.PublicKeyPath).
-		SetFormData(map[string]string{"name": data.Name, "type": data.Type, "metadata": data.Metadata}).
+func (client *HTTPClient) UploadSecret(ctx context.Context, token string, data clientModel.UploadData) error {
+	response, err := client.client.R().
+		SetContext(ctx).
+		SetHeader("Content-Type", "application/octet-stream").
+		SetHeader("Authorization", token).
+		SetHeader("X-Secret-Name", data.Name).
+		SetHeader("X-Secret-Type", data.Type).
+		SetHeader("X-Secret-Metadata", data.Metadata).
+		SetHeader("X-Secret-Public-Key", data.PublicKey).
+		SetBody(data.File).
 		Post("/api/secret")
 	if err != nil {
 		return err
 	}
 
 	if response.IsError() {
-		return errors.New("delete secret error")
+		return errors.New("upload secret error")
 	}
 
 	return nil

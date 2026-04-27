@@ -6,6 +6,10 @@ type DeleteArgs struct {
 
 type ListArgs struct{}
 
+type GetArgs struct {
+	ID string
+}
+
 type LoginArgs struct {
 	Login    string
 	Password string
@@ -17,16 +21,21 @@ type RegisterArgs struct {
 }
 
 type UploadAuthArgs struct {
-	Login    string
-	Password string
+	Login      string `json:"login"`
+	Password   string `json:"password"`
+	Metadata   string `json:"-"`
+	UploadName string `json:"-"`
 }
 
 type UploadCardArgs struct {
-	Name   string
-	Number string
-	CVV    string
+	Name       string `json:"name"`
+	Number     string `json:"number"`
+	CVV        string `json:"cvv"`
+	Metadata   string `json:"-"`
+	UploadName string `json:"-"`
 }
 
 type UploadFileArgs struct {
-	Path string
+	Path     string
+	Metadata string
 }

@@ -2,10 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -74,35 +76,33 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mw := multipart.NewWriter(w)
-	defer mw.Close()
-
-	w.Header().Set("Content-Type", mw.FormDataContentType())
-
-	_ = mw.WriteField("id", secret.ID)
-	_ = mw.WriteField("name", secret.Name)
-	_ = mw.WriteField("metadata", secret.Metadata)
-	_ = mw.WriteField("publicKey", secret.PublicKey)
-	_ = mw.WriteField("type", secret.Type)
-
-	part, err := mw.CreateFormFile("data", secret.Name)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	file, err := os.Open(secret.DataPath)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	defer file.Close()
 
-	_, err = io.Copy(part, file)
+	stat, err := file.Stat()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("X-Secret-Name", secret.Name)
+	w.Header().Set("X-Secret-Type", secret.Type)
+	w.Header().Set("X-Secret-Public-Key", secret.PublicKey)
+	w.Header().Set("X-Secret-Metadata", secret.Metadata)
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%d"`, secret.Name))
+	w.Header().Set("Content-Length", strconv.FormatInt(stat.Size(), 10))
+
+	if _, err := io.Copy(w, file); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // DeleteSecret godoc
@@ -154,44 +154,41 @@ func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) extractSecretModelFromForm(r *http.Request) (*model.SecretCreateDto, error) {
-	name := r.FormValue("name")
-	uploadType := r.FormValue("type")
-	metadata := r.FormValue("metadata")
-	publicKey := r.FormValue("publicKey")
+	name := r.Header.Get("X-Secret-Name")
+	secretType := r.Header.Get("X-Secret-Type")
+	metadata := r.Header.Get("X-Secret-Metadata")
+	publicKey := r.Header.Get("X-Secret-Public-Key")
 
 	if name == "" {
 		return nil, errors.SecretNameIsRequired
 	}
 
-	switch uploadType {
-	case model.Auth, model.Card, model.File:
-	default:
+	if secretType == "" {
 		return nil, errors.SecretInvalidType
 	}
 
-	dataFile, _, err := r.FormFile("data")
-	if err != nil {
-		return nil, errors.SecretFileIsRequired
+	if publicKey == "" {
+		return nil, errors.PublicKeyIsRequired
 	}
-	defer dataFile.Close()
 
-	dataPath := "./uploads/" + name
+	fileName := filepath.Base(name)
+	dataPath := filepath.Join("./uploads", fileName)
 
 	dst, err := os.Create(dataPath)
 	if err != nil {
 		return nil, err
 	}
 	defer dst.Close()
-
-	if _, err := io.Copy(dst, dataFile); err != nil {
+	// move logic to service
+	if _, err := io.Copy(dst, r.Body); err != nil {
 		return nil, err
 	}
 
 	return &model.SecretCreateDto{
 		Name:      name,
-		Type:      uploadType,
+		Type:      secretType,
 		Metadata:  metadata,
-		DataPath:  dataPath,
 		PublicKey: publicKey,
+		DataPath:  dataPath,
 	}, nil
 }
