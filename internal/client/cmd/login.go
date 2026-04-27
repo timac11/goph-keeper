@@ -23,7 +23,13 @@ func BuildLoginCmd(executor func(context.Context, model.LoginArgs) error) *cobra
 				return errors.New("password is required")
 			}
 
-			return executor(cmd.Context(), commandArgs)
+			err := executor(cmd.Context(), commandArgs)
+			if err != nil {
+				return err
+			}
+
+			cmd.Println("Authorization completed!")
+			return nil
 		},
 	}
 

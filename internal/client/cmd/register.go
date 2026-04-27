@@ -23,7 +23,13 @@ func BuildRegisterCmd(executor func(context.Context, model.RegisterArgs) error) 
 				return errors.New("password is required")
 			}
 
-			return executor(cmd.Context(), commandArgs)
+			err := executor(cmd.Context(), commandArgs)
+			if err != nil {
+				return err
+			}
+
+			cmd.Println("Registration completed!")
+			return nil
 		},
 	}
 
