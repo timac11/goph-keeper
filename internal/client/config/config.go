@@ -12,9 +12,10 @@ import (
 type Config struct {
 	ConfigPath      string `env:"CONFIG_PATH"`
 	PrivateKeyPath  string
-	PublicKeyPath   string
+	RecPath         string
 	ServerAddress   string
 	SessionFilePath string
+	StoreDirPath    string
 }
 
 type jsonConfig struct {
@@ -22,6 +23,7 @@ type jsonConfig struct {
 	PublicKeyPath   string `json:"publicKeyPath"`
 	ServerAddress   string `json:"serverAddress"`
 	SessionFilePath string `json:"sessionFilePath"`
+	StoreDirPath    string `json:"storeDirPath"`
 }
 
 func InitConfig() (*Config, error) {
@@ -55,9 +57,10 @@ func assignJSONConfig(config *Config) (*Config, error) {
 
 				if err := json.NewDecoder(file).Decode(&jsonConfig); err == nil {
 					config.PrivateKeyPath = jsonConfig.PrivateKeyPath
-					config.PublicKeyPath = jsonConfig.PublicKeyPath
+					config.RecPath = jsonConfig.PublicKeyPath
 					config.SessionFilePath = jsonConfig.SessionFilePath
 					config.ServerAddress = jsonConfig.ServerAddress
+					config.StoreDirPath = jsonConfig.StoreDirPath
 				}
 			}
 

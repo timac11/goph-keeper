@@ -5,17 +5,28 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/timac11/goph-keeper/internal/client/model"
+	clientModel "github.com/timac11/goph-keeper/internal/client/model"
+	"github.com/timac11/goph-keeper/internal/common/model"
 )
 
-func BuildListCmd(executor func(context.Context, model.ListArgs) error) *cobra.Command {
-	var commandArgs model.ListArgs
+func BuildListCmd(executor func(context.Context, clientModel.ListArgs) (*[]model.SecretInfoDto, error)) *cobra.Command {
+	var commandArgs clientModel.ListArgs
 
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List of uploaded data",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return executor(cmd.Context(), commandArgs)
+			_, err := executor(cmd.Context(), commandArgs)
+
+			if err != nil {
+				return err
+			}
+
+			// TODO: print list
+
+			return nil
 		},
 	}
+
+	return cmd
 }

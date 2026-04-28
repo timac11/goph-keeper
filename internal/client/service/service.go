@@ -9,9 +9,9 @@ import (
 )
 
 type Config struct {
-	storeDir       string
-	privateKeyPath string
-	recPath        string
+	StoreDir       string
+	PrivateKeyPath string
+	RecPath        string
 }
 
 type Service struct {
@@ -27,4 +27,16 @@ type Client interface {
 	GetSecret(ctx context.Context, token, id string) (*clientModel.GetSecretDto, error)
 	DeleteSecret(ctx context.Context, token, id string) error
 	UploadSecret(ctx context.Context, token string, data clientModel.UploadData) error
+}
+
+func NewService(
+	client Client,
+	cache cache.Cache[clientModel.AppSettings],
+	conf Config,
+) *Service {
+	return &Service{
+		client: client,
+		cache:  cache,
+		config: conf,
+	}
 }

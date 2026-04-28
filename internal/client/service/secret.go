@@ -53,7 +53,7 @@ func (s *Service) GetSecret(ctx context.Context, args clientModel.GetArgs) (stri
 
 	// store encrypted file
 	defer res.File.Close()
-	tempFile, err := os.CreateTemp(s.config.storeDir, "*")
+	tempFile, err := os.CreateTemp(s.config.StoreDir, "*")
 	if err != nil {
 		return "", err
 	}
@@ -72,13 +72,13 @@ func (s *Service) GetSecret(ctx context.Context, args clientModel.GetArgs) (stri
 		return "", err
 	}
 
-	decryptedPublicKey, err := encryption.AsymmetricDecrypt(s.config.privateKeyPath, decodedPublicKey)
+	decryptedPublicKey, err := encryption.AsymmetricDecrypt(s.config.PrivateKeyPath, decodedPublicKey)
 	if err != nil {
 		return "", err
 	}
 
 	// decrypt and store file
-	dst, err := os.Create(filepath.Join(s.config.storeDir, res.Name))
+	dst, err := os.Create(filepath.Join(s.config.StoreDir, res.Name))
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +141,7 @@ func (s *Service) uploadEntry(ctx context.Context, path, metadata, entryType str
 		return err
 	}
 
-	tempFile, err := os.CreateTemp(s.config.storeDir, "*")
+	tempFile, err := os.CreateTemp(s.config.StoreDir, "*")
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (s *Service) uploadEntry(ctx context.Context, path, metadata, entryType str
 		return err
 	}
 
-	encryptedPublicKey, err := encryption.AsymmetricEncrypt(s.config.recPath, *publicKeyBytes)
+	encryptedPublicKey, err := encryption.AsymmetricEncrypt(s.config.RecPath, *publicKeyBytes)
 	if err != nil {
 		return err
 	}
