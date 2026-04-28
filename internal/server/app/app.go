@@ -33,7 +33,10 @@ func InitApplication() {
 	}
 
 	appService := service.NewService(dbClient)
-	jwtControl := auth.JWTControl{TokenExp: (time.Duration(conf.JWTExpMinutes * uint(time.Minute))), Secret: conf.JWTSecret}
+	jwtControl := auth.JWTControl{
+		TokenExp: (time.Duration(conf.JWTExpMinutes * uint(time.Minute))), 
+		Secret: conf.JWTSecret,
+	}
 
 	server := initHttpServer(conf.Address, appService, &jwtControl)
 
