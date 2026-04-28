@@ -6,11 +6,10 @@ import (
 	"os"
 
 	"github.com/caarlos0/env"
-	"github.com/spf13/pflag"
 )
 
 type Config struct {
-	ConfigPath      string `env:"CONFIG_PATH"`
+	ConfigPath      string `env:"CONFIG_PATH" envDefault:"./config.json"`
 	PrivateKeyPath  string
 	RecPath         string
 	ServerAddress   string
@@ -28,11 +27,6 @@ type jsonConfig struct {
 
 func InitConfig() (*Config, error) {
 	envValues := initEnv()
-	flagValues := initFlags()
-
-	if envValues.ConfigPath == "" {
-		envValues.ConfigPath = flagValues.ConfigPath
-	}
 
 	return assignJSONConfig(envValues)
 }
@@ -69,13 +63,4 @@ func assignJSONConfig(config *Config) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func initFlags() *Config {
-	flagValues := Config{}
-
-	pflag.StringVarP(&flagValues.ConfigPath, "conf", "c", "./config.json", "Path to config file in json format")
-	pflag.Parse()
-
-	return &flagValues
 }
