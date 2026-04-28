@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Service) GetSecretsList(ctx context.Context, args clientModel.ListArgs) (*[]model.SecretInfoDto, error) {
-	settings, err := s.cache.Restore()
+	settings, err := s.cache.Restore(ctx)
 
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (s *Service) GetSecretsList(ctx context.Context, args clientModel.ListArgs)
 }
 
 func (s *Service) DeleteSecret(ctx context.Context, args clientModel.DeleteArgs) error {
-	settings, err := s.cache.Restore()
+	settings, err := s.cache.Restore(ctx)
 
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (s *Service) DeleteSecret(ctx context.Context, args clientModel.DeleteArgs)
 }
 
 func (s *Service) GetSecret(ctx context.Context, args clientModel.GetArgs) (string, error) {
-	settings, err := s.cache.Restore()
+	settings, err := s.cache.Restore(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +136,7 @@ func (s *Service) UploadCard(ctx context.Context, args clientModel.UploadCardArg
 }
 
 func (s *Service) uploadEntry(ctx context.Context, path, metadata, entryType string) error {
-	settings, err := s.cache.Restore()
+	settings, err := s.cache.Restore(ctx)
 	if err != nil {
 		return err
 	}

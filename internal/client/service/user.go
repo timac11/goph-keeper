@@ -13,9 +13,7 @@ func (s *Service) Login(ctx context.Context, args clientModel.LoginArgs) error {
 	}
 
 	appSettings := clientModel.AppSettings{ Token: res.Token }
-	err = s.cache.Store(appSettings)
-
-	return nil
+	return s.cache.Store(ctx, appSettings)
 }
 
 func (s *Service) Register(ctx context.Context, args clientModel.RegisterArgs) error {
@@ -25,7 +23,5 @@ func (s *Service) Register(ctx context.Context, args clientModel.RegisterArgs) e
 	}
 
 	appSettings := clientModel.AppSettings{ Token: res.Token }
-	err = s.cache.Store(appSettings)
-
-	return nil
+	return s.cache.Store(ctx, appSettings)
 }

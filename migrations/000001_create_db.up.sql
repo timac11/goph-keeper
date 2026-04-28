@@ -29,7 +29,7 @@ CREATE TABLE "secret" (
     user_id UUID REFERENCES "user" (id) ON UPDATE CASCADE ON DELETE CASCADE,
     
     name VARCHAR(255) NOT NULL UNIQUE,
-    "type" VARCHAR(4) NOT NULL CHECK (status IN ('AUTH', 'FILE', 'CARD')),
+    "type" VARCHAR(4) NOT NULL CHECK ("type" IN ('AUTH', 'FILE', 'CARD')),
     data_path VARCHAR NOT NULL,
     metadata VARCHAR(1000),
     public_key VARCHAR NOT NULL,

@@ -39,7 +39,7 @@ func Init(h handler.Handler, jwtControl *auth.JWTControl) *mux.Router {
 	publicRouter := r.PathPrefix("/api").Subrouter()
 	publicRouter.Use(m.NotAuthCheckMiddleware)
 	publicRouter.HandleFunc("/login", h.Login).Methods("POST")
-	publicRouter.HandleFunc("/register", h.Login).Methods("POST")
+	publicRouter.HandleFunc("/register", h.Register).Methods("POST")
 
 	return r
 }

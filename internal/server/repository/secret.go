@@ -16,14 +16,14 @@ import (
 func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCreateDto, userId string) (*model.SecretInfoDto, error) {
 	var secretModel model.SecretInfoDto
 
-	query, _, err := sq.Insert("user").
+	query, args, err := sq.Insert("user").
 		Columns("id", "name", "type", "data", "metadata", "public_key", "user_id").
 		Values(userId, secret.Name, secret.Type, secret.DataPath, secret.Metadata, secret.PublicKey, userId).
 		Suffix("RETURNING id, name, type, created_at, updated_at").
 		ToSql()
 
 	err = client.pool.
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, args...).
 		Scan(&secretModel.ID, &secretModel.Name, &secretModel.Type, &secretModel.CreatedAt, &secretModel.UpdatedAt)
 
 	if err != nil {
@@ -39,9 +39,10 @@ func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCr
 func (client *PgClient) GetSecret(ctx context.Context, id, userId string) (*model.Secret, error) {
 	var secret model.Secret
 
-	query, _, err := sq.Select("id", "name", "type", "data", "metadata", "public_key", "created_at", "updated_at").
+	query, args, err := sq.Select("id", "name", "type", "data", "metadata", "public_key", "created_at", "updated_at").
 		From("secret").
 		Where(sq.Eq{"id": id, "user_id": userId}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
@@ -49,7 +50,7 @@ func (client *PgClient) GetSecret(ctx context.Context, id, userId string) (*mode
 	}
 
 	err = client.pool.
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, args...).
 		Scan(&secret.ID, &secret.Name, &secret.Type, &secret.DataPath, &secret.Metadata, &secret.PublicKey, &secret.CreatedAt, &secret.UpdatedAt)
 
 	if err != nil {
@@ -76,17 +77,18 @@ func (client *PgClient) DeleteSecret(ctx context.Context, id, userId string) err
 }
 
 func (client *PgClient) GetSecretsList(ctx context.Context, userId string) (*[]model.SecretInfoDto, error) {
-	query, _, err := sq.
+	query, args, err := sq.
 		Select("id", "name", "type", "updated_at", "created_at").
 		From("secret").
 		Where(sq.Eq{"user_id": userId}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := client.pool.Query(ctx, query)
+	rows, err := client.pool.Query(ctx, query, args...)
 
 	if err != nil {
 		return nil, err

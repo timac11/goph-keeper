@@ -33,8 +33,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Authorization", signedString)
+	returnBody, err := json.Marshal(model.UserLoginResultDto{Token: signedString})
+	if err != nil {
+		handleUserError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(returnBody)
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
@@ -59,8 +66,15 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Authorization", signedString)
+	returnBody, err := json.Marshal(model.UserLoginResultDto{Token: signedString})
+	if err != nil {
+		handleUserError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(returnBody)
 }
 
 func parseUserFromBody(req *http.Request) (*model.UserLoginDto, error) {

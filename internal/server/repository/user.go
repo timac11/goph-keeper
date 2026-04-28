@@ -8,22 +8,30 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"go.uber.org/zap"
 
+	"github.com/timac11/goph-keeper/internal/common/logger"
 	"github.com/timac11/goph-keeper/internal/common/model"
 	"github.com/timac11/goph-keeper/internal/server/errors"
 )
 
 func (client *PgClient) CreateUser(ctx context.Context, user *model.UserLoginDto) (*model.User, error) {
 	var userModel model.User
+	log := logger.LoggerFromContext(ctx)
 
-	query, _, err := sq.Insert("user").
+	log.Info("Create user with params",
+		zap.String("login", user.Login),
+	)
+
+	query, args, err := sq.Insert(`"user"`).
 		Columns("login", "password").
 		Values(user.Login, user.Password).
 		Suffix("RETURNING id, login, password").
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	err = client.pool.
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, args...).
 		Scan(&userModel.ID, &userModel.Login, &userModel.Password)
 
 	if err != nil {
@@ -39,13 +47,14 @@ func (client *PgClient) CreateUser(ctx context.Context, user *model.UserLoginDto
 func (client *PgClient) GetUserByLogin(ctx context.Context, login string) (*model.User, error) {
 	var user model.User
 
-	query, _, err := sq.Select("id", "login", "password").
-		From("user").
+	query, args, err := sq.Select("id", "login", "password").
+		From(`"user"`).
 		Where(sq.Eq{"login": login}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	err = client.pool.
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, args...).
 		Scan(&user.ID, &user.Login, &user.Password)
 
 	if err != nil {
@@ -61,13 +70,14 @@ func (client *PgClient) GetUserByLogin(ctx context.Context, login string) (*mode
 func (client *PgClient) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	var user model.User
 
-	query, _, err := sq.Select("id", "login", "password").
-		From("user").
+	query, args, err := sq.Select("id", "login", "password").
+		From(`"user"`).
 		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	err = client.pool.
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, args...).
 		Scan(&user.ID, &user.Login, &user.Password)
 
 	if err != nil {

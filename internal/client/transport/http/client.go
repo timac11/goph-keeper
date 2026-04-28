@@ -33,7 +33,7 @@ func (client *HTTPClient) Login(ctx context.Context, login, password string) (*m
 	payload := model.UserLoginDto{Login: login, Password: password}
 	var result model.UserLoginResultDto
 
-	response, err := client.client.R().SetBody(payload).SetResult(result).Post("/api/login")
+	response, err := client.client.R().SetBody(payload).SetResult(&result).Post("/api/login")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (client *HTTPClient) Register(ctx context.Context, login, password string) 
 	payload := model.UserLoginDto{Login: login, Password: password}
 	var result model.UserLoginResultDto
 
-	response, err := client.client.R().SetBody(payload).SetResult(result).Post("/api/register")
+	response, err := client.client.R().SetBody(payload).SetResult(&result).Post("/api/register")
 	if err != nil {
 		return nil, err
 	}

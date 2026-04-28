@@ -47,6 +47,7 @@ func InitApplication() {
 
 	// run server
 	g.Go(func() error {
+		log.Info("start server")
 		return server.Start()
 	})
 
@@ -63,6 +64,10 @@ func InitApplication() {
 
 		return nil
 	})
+
+	if err := g.Wait(); err != nil {
+		log.Fatal(err.Error())
+	}
 }
 
 func initHttpServer(address string, appService *service.Service, jwtControl *auth.JWTControl) Server {

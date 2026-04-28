@@ -57,8 +57,6 @@ func assignJSONConfig(config *Config) (*Config, error) {
 					config.StoreDirPath = jsonConfig.StoreDirPath
 				}
 			}
-
-			return nil, err
 		}
 	}
 
