@@ -65,7 +65,7 @@ func (client *HTTPClient) GetList(ctx context.Context, token string) (*[]model.S
 	var result []model.SecretInfoDto
 
 	response, err := client.client.R().SetHeader("Authorization", token).
-		SetResult(result).
+		SetResult(&result).
 		Get("/api/secrets")
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (client *HTTPClient) GetSecret(ctx context.Context, token, id string) (*cli
 	response, err := client.client.R().SetHeader("Authorization", token).
 		SetContext(ctx).
 		SetDoNotParseResponse(true).
-		Get(fmt.Sprintf("/api/secret/%s", id))
+		Get(fmt.Sprintf("/api/secrets/%s", id))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (client *HTTPClient) GetSecret(ctx context.Context, token, id string) (*cli
 
 func (client *HTTPClient) DeleteSecret(ctx context.Context, token, id string) error {
 	response, err := client.client.R().SetHeader("Authorization", token).
-		Delete(fmt.Sprintf("/api/secret/%s", id))
+		Delete(fmt.Sprintf("/api/secrets/%s", id))
 	if err != nil {
 		return err
 	}
@@ -127,8 +127,8 @@ func (client *HTTPClient) UploadSecret(ctx context.Context, token string, data c
 		SetHeader("X-Secret-Type", data.Type).
 		SetHeader("X-Secret-Metadata", data.Metadata).
 		SetHeader("X-Secret-Public-Key", data.PublicKey).
-		SetBody(data.File).
-		Post("/api/secret")
+		SetFile(data.Name, data.File.Name()).
+		Post("/api/secrets")
 	if err != nil {
 		return err
 	}

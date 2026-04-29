@@ -28,7 +28,7 @@ CREATE TABLE "secret" (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES "user" (id) ON UPDATE CASCADE ON DELETE CASCADE,
     
-    name VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
     "type" VARCHAR(4) NOT NULL CHECK ("type" IN ('AUTH', 'FILE', 'CARD')),
     data_path VARCHAR NOT NULL,
     metadata VARCHAR(1000),

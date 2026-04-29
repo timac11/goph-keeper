@@ -12,7 +12,7 @@ func (s *Service) Login(ctx context.Context, args clientModel.LoginArgs) error {
 		return err
 	}
 
-	appSettings := clientModel.AppSettings{ Token: res.Token }
+	appSettings := clientModel.AppSettings{Token: res.Token}
 	return s.cache.Store(ctx, appSettings)
 }
 
@@ -22,6 +22,6 @@ func (s *Service) Register(ctx context.Context, args clientModel.RegisterArgs) e
 		return err
 	}
 
-	appSettings := clientModel.AppSettings{ Token: res.Token }
+	appSettings := clientModel.AppSettings{Token: res.Token}
 	return s.cache.Store(ctx, appSettings)
 }

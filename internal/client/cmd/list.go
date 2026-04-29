@@ -16,13 +16,17 @@ func BuildListCmd(executor func(context.Context, clientModel.ListArgs) (*[]model
 		Use:   "list",
 		Short: "List of uploaded data",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := executor(cmd.Context(), commandArgs)
+			secrets, err := executor(cmd.Context(), commandArgs)
 
 			if err != nil {
 				return err
 			}
 
-			// TODO: print list
+			cmd.Printf("Available %d secrets:", len(*secrets))
+
+			for _, secret := range *secrets {
+				cmd.Println("%s, %s, %s", secret.ID, secret.Name, secret.Type)
+			}
 
 			return nil
 		},

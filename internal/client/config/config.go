@@ -19,7 +19,7 @@ type Config struct {
 
 type jsonConfig struct {
 	PrivateKeyPath  string `json:"privateKeyPath"`
-	PublicKeyPath   string `json:"publicKeyPath"`
+	RecPath         string `json:"recPath"`
 	ServerAddress   string `json:"serverAddress"`
 	SessionFilePath string `json:"sessionFilePath"`
 	StoreDirPath    string `json:"storeDirPath"`
@@ -51,7 +51,7 @@ func assignJSONConfig(config *Config) (*Config, error) {
 
 				if err := json.NewDecoder(file).Decode(&jsonConfig); err == nil {
 					config.PrivateKeyPath = jsonConfig.PrivateKeyPath
-					config.RecPath = jsonConfig.PublicKeyPath
+					config.RecPath = jsonConfig.RecPath
 					config.SessionFilePath = jsonConfig.SessionFilePath
 					config.ServerAddress = jsonConfig.ServerAddress
 					config.StoreDirPath = jsonConfig.StoreDirPath

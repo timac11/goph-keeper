@@ -22,6 +22,9 @@ func BuildUploadAuthCmd(executor func(context.Context, model.UploadAuthArgs) err
 			if commandArgs.Password == "" {
 				return errors.New("password is required")
 			}
+			if commandArgs.UploadName == "" {
+				return errors.New("upload name is required")
+			}
 
 			return executor(cmd.Context(), commandArgs)
 		},
@@ -29,6 +32,7 @@ func BuildUploadAuthCmd(executor func(context.Context, model.UploadAuthArgs) err
 
 	cmd.Flags().StringVar(&commandArgs.Login, "login", "", "Account login")
 	cmd.Flags().StringVar(&commandArgs.Password, "password", "", "Account password")
+	cmd.Flags().StringVar(&commandArgs.UploadName, "upload", "", "Upload name")
 
 	return cmd
 }

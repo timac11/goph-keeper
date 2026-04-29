@@ -10,7 +10,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 
+	"github.com/timac11/goph-keeper/internal/common/logger"
 	"github.com/timac11/goph-keeper/internal/common/model"
 	"github.com/timac11/goph-keeper/internal/server/errors"
 )
@@ -41,10 +43,12 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+	log := logger.LoggerFromContext(r.Context())
 
 	_, err = h.service.CreateSecret(ctx, secret)
 
 	if err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -94,7 +98,7 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Secret-Type", secret.Type)
 	w.Header().Set("X-Secret-Public-Key", secret.PublicKey)
 	w.Header().Set("X-Secret-Metadata", secret.Metadata)
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%d"`, secret.Name))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, secret.Name))
 	w.Header().Set("Content-Length", strconv.FormatInt(stat.Size(), 10))
 
 	if _, err := io.Copy(w, file); err != nil {
@@ -147,6 +151,7 @@ func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(string(returnBody))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -154,10 +159,18 @@ func (h *Handler) GetSecretsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) extractSecretModelFromForm(r *http.Request) (*model.SecretCreateDto, error) {
+	log := logger.LoggerFromContext(r.Context())
+
 	name := r.Header.Get("X-Secret-Name")
 	secretType := r.Header.Get("X-Secret-Type")
 	metadata := r.Header.Get("X-Secret-Metadata")
 	publicKey := r.Header.Get("X-Secret-Public-Key")
+
+	log.Info("parsed fields",
+		zap.String("name", name),
+		zap.String("secretType", secretType),
+		zap.String("publicKey", publicKey),
+	)
 
 	if name == "" {
 		return nil, errors.SecretNameIsRequired
@@ -176,11 +189,14 @@ func (h *Handler) extractSecretModelFromForm(r *http.Request) (*model.SecretCrea
 
 	dst, err := os.Create(dataPath)
 	if err != nil {
+		log.Error(err.Error())
 		return nil, err
 	}
 	defer dst.Close()
+
 	// move logic to service
 	if _, err := io.Copy(dst, r.Body); err != nil {
+		log.Error(err.Error())
 		return nil, err
 	}
 

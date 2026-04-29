@@ -16,10 +16,11 @@ import (
 func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCreateDto, userId string) (*model.SecretInfoDto, error) {
 	var secretModel model.SecretInfoDto
 
-	query, args, err := sq.Insert("user").
-		Columns("id", "name", "type", "data", "metadata", "public_key", "user_id").
-		Values(userId, secret.Name, secret.Type, secret.DataPath, secret.Metadata, secret.PublicKey, userId).
+	query, args, err := sq.Insert("secret").
+		Columns("name", "type", "data_path", "metadata", "public_key", "user_id").
+		Values(secret.Name, secret.Type, secret.DataPath, secret.Metadata, secret.PublicKey, userId).
 		Suffix("RETURNING id, name, type, created_at, updated_at").
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	err = client.pool.
@@ -78,7 +79,7 @@ func (client *PgClient) DeleteSecret(ctx context.Context, id, userId string) err
 
 func (client *PgClient) GetSecretsList(ctx context.Context, userId string) (*[]model.SecretInfoDto, error) {
 	query, args, err := sq.
-		Select("id", "name", "type", "updated_at", "created_at").
+		Select("id", "name", `"type"`, "updated_at", "created_at").
 		From("secret").
 		Where(sq.Eq{"user_id": userId}).
 		PlaceholderFormat(sq.Dollar).
@@ -96,7 +97,7 @@ func (client *PgClient) GetSecretsList(ctx context.Context, userId string) (*[]m
 
 	defer rows.Close()
 
-	var result []model.SecretInfoDto
+	result := make([]model.SecretInfoDto, 0)
 
 	for rows.Next() {
 		var secret model.SecretInfoDto

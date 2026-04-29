@@ -11,7 +11,9 @@ import (
 
 	"github.com/timac11/goph-keeper/internal/client/encryption"
 	clientModel "github.com/timac11/goph-keeper/internal/client/model"
+	"github.com/timac11/goph-keeper/internal/common/logger"
 	"github.com/timac11/goph-keeper/internal/common/model"
+	"go.uber.org/zap"
 )
 
 func (s *Service) GetSecretsList(ctx context.Context, args clientModel.ListArgs) (*[]model.SecretInfoDto, error) {
@@ -23,9 +25,13 @@ func (s *Service) GetSecretsList(ctx context.Context, args clientModel.ListArgs)
 
 	res, err := s.client.GetList(ctx, settings.Token)
 
+	log := logger.LoggerFromContext(ctx)
+
 	if err != nil {
 		return nil, err
 	}
+
+	log.Info("secretes count:", zap.Int("count", len(*res)))
 
 	return res, nil
 }
@@ -96,12 +102,16 @@ func (s *Service) UploadFile(ctx context.Context, args clientModel.UploadFileArg
 }
 
 func (s *Service) UploadAuth(ctx context.Context, args clientModel.UploadAuthArgs) error {
-	fileName := fmt.Sprintf("%d.json", args.UploadName)
+	log := logger.LoggerFromContext(ctx)
+
+	fileName := fmt.Sprintf("%s/%s.json", s.config.StoreDir, args.UploadName)
 
 	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
+
+	log.Info("created json file with auth", zap.String("file", fileName))
 
 	encoder := json.NewEncoder(f)
 	err = encoder.Encode(args)

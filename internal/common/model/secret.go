@@ -31,9 +31,9 @@ type SecretCreateDto struct {
 }
 
 type SecretInfoDto struct {
-	ID        string
-	Name      string
-	Type      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

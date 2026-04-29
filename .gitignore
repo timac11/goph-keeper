@@ -24,4 +24,7 @@ vendor/
 .vscode
 
 session/
+uploads/
+recs/
 config.json
+.DS_Store
