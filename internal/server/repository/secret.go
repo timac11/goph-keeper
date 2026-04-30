@@ -40,7 +40,7 @@ func (client *PgClient) CreateSecret(ctx context.Context, secret *model.SecretCr
 func (client *PgClient) GetSecret(ctx context.Context, id, userId string) (*model.Secret, error) {
 	var secret model.Secret
 
-	query, args, err := sq.Select("id", "name", "type", "data", "metadata", "public_key", "created_at", "updated_at").
+	query, args, err := sq.Select("id", "name", "type", "data_path", "metadata", "public_key", "created_at", "updated_at").
 		From("secret").
 		Where(sq.Eq{"id": id, "user_id": userId}).
 		PlaceholderFormat(sq.Dollar).

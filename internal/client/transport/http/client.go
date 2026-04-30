@@ -127,7 +127,7 @@ func (client *HTTPClient) UploadSecret(ctx context.Context, token string, data c
 		SetHeader("X-Secret-Type", data.Type).
 		SetHeader("X-Secret-Metadata", data.Metadata).
 		SetHeader("X-Secret-Public-Key", data.PublicKey).
-		SetFile(data.Name, data.File.Name()).
+		SetBody(data.File).
 		Post("/api/secrets")
 	if err != nil {
 		return err

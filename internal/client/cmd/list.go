@@ -25,7 +25,7 @@ func BuildListCmd(executor func(context.Context, clientModel.ListArgs) (*[]model
 			cmd.Printf("Available %d secrets:", len(*secrets))
 
 			for _, secret := range *secrets {
-				cmd.Println("%s, %s, %s", secret.ID, secret.Name, secret.Type)
+				cmd.Println(secret.ID, secret.Name, secret.Type)
 			}
 
 			return nil

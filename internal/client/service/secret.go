@@ -65,7 +65,7 @@ func (s *Service) GetSecret(ctx context.Context, args clientModel.GetArgs) (stri
 	}
 
 	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
+	// defer os.Remove(tempFile.Name())
 
 	_, err = io.Copy(tempFile, res.File)
 	if err != nil {
@@ -86,6 +86,10 @@ func (s *Service) GetSecret(ctx context.Context, args clientModel.GetArgs) (stri
 	// decrypt and store file
 	dst, err := os.Create(filepath.Join(s.config.StoreDir, res.Name))
 	if err != nil {
+		return "", err
+	}
+
+	if _, err := tempFile.Seek(0, io.SeekStart); err != nil {
 		return "", err
 	}
 
@@ -175,6 +179,10 @@ func (s *Service) uploadEntry(ctx context.Context, path, metadata, entryType str
 	}
 
 	publicKey := base64.StdEncoding.EncodeToString(*encryptedPublicKey)
+
+	if _, err := tempFile.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
 
 	uploadData := clientModel.UploadData{
 		Name:      filepath.Base(path),

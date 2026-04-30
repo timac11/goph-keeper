@@ -72,16 +72,19 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	ctx := r.Context()
+	log := logger.LoggerFromContext(ctx)
 
 	secret, err := h.service.GetSecret(ctx, id)
 
 	if err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	file, err := os.Open(secret.DataPath)
 	if err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -89,6 +92,7 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 
 	stat, err := file.Stat()
 	if err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -96,17 +100,16 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("X-Secret-Name", secret.Name)
 	w.Header().Set("X-Secret-Type", secret.Type)
-	w.Header().Set("X-Secret-Public-Key", secret.PublicKey)
+	w.Header().Set("X-Secret-PublicKey", secret.PublicKey)
 	w.Header().Set("X-Secret-Metadata", secret.Metadata)
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, secret.Name))
 	w.Header().Set("Content-Length", strconv.FormatInt(stat.Size(), 10))
 
 	if _, err := io.Copy(w, file); err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 // DeleteSecret godoc
