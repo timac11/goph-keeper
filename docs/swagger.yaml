@@ -1,0 +1,134 @@
+basePath: /
+definitions:
+  model.SecretInfoDto:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+info:
+  contact:
+    name: API Support
+  description: This is a Gophkeeper swagger API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Gophkeeper server API
+  version: "1.0"
+paths:
+  /secret:
+    get:
+      consumes:
+      - application/json
+      description: Get secrets list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.SecretInfoDto'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Return Secrets list
+      tags:
+      - Secret
+    post:
+      consumes:
+      - multipart/form-data
+      description: |-
+        Secret multipart/form-data with fields:
+        - name: string
+        - metadata: string
+        - data: file (binary)
+        - type: one of [FILE, CARD, CREDS]
+        - publicKey: file (binary)
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Data file (binary)
+        in: formData
+        name: data
+        required: true
+        type: file
+      - description: Type (file|card|creds)
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: Public key (binary)
+        in: formData
+        name: publicKey
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SecretInfoDto'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload secret with metadata
+      tags:
+      - Secret
+  /secret/{id}:
+    delete:
+      description: Remove secret by id
+      parameters:
+      - description: Secret id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Remove Secret
+      tags:
+      - Secret
+    get:
+      description: Returns secret fields and secret data file as multipart/form-data.
+      parameters:
+      - description: Secret id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: 'multipart/form-data response with fields: id, name, metadata,
+            publicKey, type and file field data'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get secret
+      tags:
+      - Secret
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

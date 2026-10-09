@@ -1,0 +1,23 @@
+package auth
+
+import (
+	"context"
+
+	"github.com/timac11/goph-keeper/internal/server/errors"
+)
+
+type CtxKey string
+
+const CtxAuthKey CtxKey = "auth"
+
+func ContextWithAuthPayload(ctx context.Context, payload *JWTPayload) context.Context {
+	return context.WithValue(ctx, CtxAuthKey, payload)
+}
+
+func AuthPayloadFromContext(ctx context.Context) (*JWTPayload, error) {
+	payload, ok := ctx.Value(CtxAuthKey).(*JWTPayload)
+	if !ok {
+		return nil, errors.UserIsUnauthorized
+	}
+	return payload, nil
+}
